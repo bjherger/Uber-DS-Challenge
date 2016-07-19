@@ -1,0 +1,8 @@
+# Compiled python code
+~.pyc
+
+# Mac folder info
+.DS_Store
+
+#Idea / Pycharm files
+.idea
