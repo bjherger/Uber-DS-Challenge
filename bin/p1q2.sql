@@ -18,7 +18,8 @@ SELECT signups_enhanced.day_of_week, AVG(rode_in_first_week::int)
         --   Create sub-table with every rider's first completed trip
         (SELECT DISTINCT ON (trips.client_id) trips.client_id, request_at
           FROM trips
-            WHERE status == 'completed'
+            WHERE trips.status == 'completed'
+          ORDER BY trips.request_at ASC
         ) AS first_completed_trips
 
         WHERE events.rider_id  == first_completed_trips.client_id
