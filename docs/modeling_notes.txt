@@ -1,0 +1,6 @@
+
+Visual inspection in Tableau:
+bgc date - signup date: conversion percentage correlates negatively with difference between fields
+vehicle added date - signup date: conversion percentage correlates negatively with difference between fields
+vehicle make, model, year: do not appear to make a difference in conversion percentage
+vehicle year: More vehicles are 5+ years old than expected
