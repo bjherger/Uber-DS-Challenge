@@ -4,6 +4,7 @@ dependencies:
 - numpy=1.11.1=py27_0
 - openssl=1.0.2h=1
 - pandas=0.18.1=np111py27_0
+- patsy=0.4.1=py27_0
 - pip=8.1.2=py27_0
 - python=2.7.12=1
 - python-dateutil=2.5.3=py27_0
@@ -14,7 +15,9 @@ dependencies:
 - setuptools=23.0.0=py27_0
 - six=1.10.0=py27_0
 - sqlite=3.13.0=0
+- statsmodels=0.6.1=np111py27_1
 - tk=8.5.18=0
 - wheel=0.29.0=py27_0
 - zlib=1.2.8=3
+prefix: /Users/bjherger/anaconda2/envs/uber_env
 

@@ -4,3 +4,5 @@ bgc date - signup date: conversion percentage correlates negatively with differe
 vehicle added date - signup date: conversion percentage correlates negatively with difference between fields
 vehicle make, model, year: do not appear to make a difference in conversion percentage
 vehicle year: More vehicles are 5+ years old than expected
+
+vehicle year: contains 0's. replacing w/ NAN
