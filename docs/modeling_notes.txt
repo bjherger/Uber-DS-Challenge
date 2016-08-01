@@ -5,4 +5,15 @@ vehicle added date - signup date: conversion percentage correlates negatively wi
 vehicle make, model, year: do not appear to make a difference in conversion percentage
 vehicle year: More vehicles are 5+ years old than expected
 
+Data cleaning / enrichming
 vehicle year: contains 0's. replacing w/ NAN
+
+Modeling:
+No multicollinearity issues apparent
+No heteroskedasticity issues apparent
+background check is indistinguishable from noise
+vehicle make is indistinguishable from noise
+vehicle year statistically significant, recentering around 2000
+
+vehicle inspect and vehicle year both statistically significant. Possible multicollinearity? Is year gathered at
+inspection?
