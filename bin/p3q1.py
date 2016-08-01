@@ -34,7 +34,7 @@ def create_signup_df(data_path):
     signup_df['signup_os_known'] = signup_df['signup_os'].notnull()
     signup_df['vehicle_make_known'] = signup_df['vehicle_make'].notnull()
 
-    signup_df['signup_to_bgc'] = (signup_df['bgc_date'] - signup_df['signup_date']).days
+    signup_df['signup_to_bgc'] = (signup_df['bgc_date'] - signup_df['signup_date'])
     print signup_df['signup_to_bgc']
     pd.tslib.Timedelta.days
     # TODO add signup weekday or weekend
