@@ -47,10 +47,10 @@ def main():
     train = stats_df.sample(frac=0.8, random_state=200)
     test = stats_df.drop(train.index)
     # Run logistic regression models
-    run_statsmodels_models(train, test, 'drove ~ signup_channel_referral + city_Berton +'
-                               'signup_weekday + vehicle_inspection_known')
-    run_statsmodels_models(train, test, 'drove ~ signup_channel_referral + city_Berton + '
-                     'vehicle_year_past_2000 + signup_to_vehicle_add + signup_to_bgc')
+    run_statsmodels_models(train, test, 'drove ~ signup_channel_referral + city_Berton + signup_weekday + '
+                                        'vehicle_inspection_known')
+    run_statsmodels_models(train, test, 'drove ~ signup_channel_referral + city_Berton  + '
+                                        'signup_to_vehicle_add + signup_to_bgc')
 
 
 def extract_days(input_delta):
@@ -207,7 +207,7 @@ def run_statsmodels_models(train, test, model_description):
     # Create, output AUC
     predicted = res.predict(X_test)
     auc = roc_auc_score(y_true=y_test, y_score=predicted)
-    print auc
+    print 'AUC for 20%% holdout: %s' %auc
 
     # Return AUC for model generated
     return auc

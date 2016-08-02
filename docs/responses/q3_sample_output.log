@@ -1,0 +1,213 @@
+/Users/bjherger/anaconda2/envs/uber_env/bin/python /Users/bjherger/Documents/Uber-DS-Challenge/bin/p3.py
+INFO:root:Beginning import of signup data, from path: ../data/input/ds_challenge_v2_1_data.csv
+INFO:root:Reading in data
+INFO:root:Data shape: 54681 rows, 11 columns
+INFO:root:Data columns: ['id', 'city_name', 'signup_os', 'signup_channel', 'signup_date', 'bgc_date', 'vehicle_added_date', 'vehicle_make', 'vehicle_model', 'vehicle_year', 'first_completed_date']
+INFO:root:Creating drove field
+INFO:root:Cleaning data
+INFO:root:Converting data types
+INFO:root:Enriching data with simple derived features
+INFO:root:Enriching data with timeseries derived features
+/Users/bjherger/anaconda2/envs/uber_env/lib/python2.7/site-packages/numpy/lib/function_base.py:3834: RuntimeWarning: Invalid value encountered in percentile
+  RuntimeWarning)
+DEBUG:root:Enriched data frame description:
+                 id  vehicle_year  signup_to_bgc  signup_to_vehicle_add  \
+count  54681.000000  13219.000000   32896.000000           12879.000000
+mean   27341.000000   2011.176413      10.046541               0.127106
+std    15785.189372      4.135149      10.519617               1.341945
+min        1.000000   1995.000000       0.000000               0.000000
+25%    13671.000000           NaN            NaN                    NaN
+50%    27341.000000           NaN            NaN                    NaN
+75%    41011.000000           NaN            NaN                    NaN
+max    54681.000000   2017.000000      69.000000              30.000000
+
+       vehicle_year_past_2000
+count            13219.000000
+mean                11.176413
+std                  4.135149
+min                 -5.000000
+25%                       NaN
+50%                       NaN
+75%                       NaN
+max                 17.000000
+Q1: Percentage of drivers w/ completed ride: 0.112232768238
+DEBUG:root:Statsmodel prepped df:
+                 id  vehicle_year         drove  signup_to_bgc  \
+count  54681.000000  13219.000000  54681.000000   32896.000000
+mean   27341.000000   2011.176413      0.112233      10.046541
+std    15785.189372      4.135149      0.315656      10.519617
+min        1.000000   1995.000000      0.000000       0.000000
+25%    13671.000000           NaN      0.000000            NaN
+50%    27341.000000           NaN      0.000000            NaN
+75%    41011.000000           NaN      0.000000            NaN
+max    54681.000000   2017.000000      1.000000      69.000000
+
+       signup_to_vehicle_add  vehicle_year_past_2000
+count           12879.000000            13219.000000
+mean                0.127106               11.176413
+std                 1.341945                4.135149
+min                 0.000000               -5.000000
+25%                      NaN                     NaN
+50%                      NaN                     NaN
+75%                      NaN                     NaN
+max                30.000000               17.000000
+INFO:root:Running model w/ description: drove ~ signup_channel_referral + city_Berton + signup_weekday + vehicle_inspection_known
+DEBUG:root:Train df:
+                 id  vehicle_year         drove  signup_to_bgc  \
+count  43745.000000  10570.000000  43745.000000   26318.000000
+mean   27352.690708   2011.212204      0.112996      10.003268
+std    15795.139353      4.104407      0.316591      10.497880
+min        1.000000   1995.000000      0.000000       0.000000
+25%    13643.000000           NaN      0.000000            NaN
+50%    27378.000000           NaN      0.000000            NaN
+75%    41055.000000           NaN      0.000000            NaN
+max    54681.000000   2017.000000      1.000000      69.000000
+
+       signup_to_vehicle_add  vehicle_year_past_2000
+count           10309.000000            10570.000000
+mean                0.126879               11.212204
+std                 1.339746                4.104407
+min                 0.000000               -5.000000
+25%                      NaN                     NaN
+50%                      NaN                     NaN
+75%                      NaN                     NaN
+max                30.000000               17.000000
+DEBUG:root:Test df:
+                 id  vehicle_year         drove  signup_to_bgc  \
+count  10936.000000   2649.000000  10936.000000    6578.000000
+mean   27294.236101   2011.033598      0.109181      10.219672
+std    15745.959694      4.253398      0.311880      10.605176
+min        3.000000   1996.000000      0.000000       0.000000
+25%    13731.750000           NaN      0.000000            NaN
+50%    27193.000000           NaN      0.000000            NaN
+75%    40854.750000           NaN      0.000000            NaN
+max    54676.000000   2017.000000      1.000000      57.000000
+
+       signup_to_vehicle_add  vehicle_year_past_2000
+count            2570.000000             2649.000000
+mean                0.128016               11.033598
+std                 1.350992                4.253398
+min                 0.000000               -4.000000
+25%                      NaN                     NaN
+50%                      NaN                     NaN
+75%                      NaN                     NaN
+max                28.000000               17.000000
+Optimization terminated successfully.
+         Current function value: 0.192102
+         Iterations: 34
+         Function evaluations: 36
+         Gradient evaluations: 36
+Strark     23663
+Berton     16061
+Wrouver     4021
+Name: city_name, dtype: int64
+Paid        19135
+Referral    13915
+Organic     10695
+Name: signup_channel, dtype: int64
+DEBUG:root:Enter SimpleTable.data2rows.
+DEBUG:root:Exit SimpleTable.data2rows.
+DEBUG:root:Enter SimpleTable.data2rows.
+DEBUG:root:Exit SimpleTable.data2rows.
+DEBUG:root:Enter SimpleTable.data2rows.
+DEBUG:root:Exit SimpleTable.data2rows.
+                           Logit Regression Results
+==============================================================================
+Dep. Variable:                  drove   No. Observations:                43745
+Model:                          Logit   Df Residuals:                    43740
+Method:                           MLE   Df Model:                            4
+Date:                Mon, 01 Aug 2016   Pseudo R-squ.:                  0.4554
+Time:                        22:56:30   Log-Likelihood:                -8403.5
+converged:                       True   LL-Null:                       -15430.
+                                        LLR p-value:                     0.000
+====================================================================================================
+                                       coef    std err          z      P>|z|      [95.0% Conf. Int.]
+----------------------------------------------------------------------------------------------------
+Intercept                           -5.3724      0.074    -72.934      0.000        -5.517    -5.228
+signup_channel_referral[T.True]      0.4938      0.038     12.906      0.000         0.419     0.569
+city_Berton[T.True]                  0.1165      0.039      2.966      0.003         0.040     0.193
+signup_weekday[T.True]               0.3623      0.042      8.619      0.000         0.280     0.445
+vehicle_inspection_known[T.True]     4.6163      0.073     63.663      0.000         4.474     4.758
+====================================================================================================
+AUC for 20% holdout: 0.922580207546
+INFO:root:Running model w/ description: drove ~ signup_channel_referral + city_Berton  + signup_to_vehicle_add + signup_to_bgc
+DEBUG:root:Train df:
+                 id  vehicle_year         drove  signup_to_bgc  \
+count  43745.000000  10570.000000  43745.000000   26318.000000
+mean   27352.690708   2011.212204      0.112996      10.003268
+std    15795.139353      4.104407      0.316591      10.497880
+min        1.000000   1995.000000      0.000000       0.000000
+25%    13643.000000           NaN      0.000000            NaN
+50%    27378.000000           NaN      0.000000            NaN
+75%    41055.000000           NaN      0.000000            NaN
+max    54681.000000   2017.000000      1.000000      69.000000
+
+       signup_to_vehicle_add  vehicle_year_past_2000
+count           10309.000000            10570.000000
+mean                0.126879               11.212204
+std                 1.339746                4.104407
+min                 0.000000               -5.000000
+25%                      NaN                     NaN
+50%                      NaN                     NaN
+75%                      NaN                     NaN
+max                30.000000               17.000000
+DEBUG:root:Test df:
+                 id  vehicle_year         drove  signup_to_bgc  \
+count  10936.000000   2649.000000  10936.000000    6578.000000
+mean   27294.236101   2011.033598      0.109181      10.219672
+std    15745.959694      4.253398      0.311880      10.605176
+min        3.000000   1996.000000      0.000000       0.000000
+25%    13731.750000           NaN      0.000000            NaN
+50%    27193.000000           NaN      0.000000            NaN
+75%    40854.750000           NaN      0.000000            NaN
+max    54676.000000   2017.000000      1.000000      57.000000
+
+       signup_to_vehicle_add  vehicle_year_past_2000
+count            2570.000000             2649.000000
+mean                0.128016               11.033598
+std                 1.350992                4.253398
+min                 0.000000               -4.000000
+25%                      NaN                     NaN
+50%                      NaN                     NaN
+75%                      NaN                     NaN
+max                28.000000               17.000000
+Optimization terminated successfully.
+         Current function value: 0.547824
+         Iterations: 24
+         Function evaluations: 26
+         Gradient evaluations: 26
+Strark     23663
+Berton     16061
+Wrouver     4021
+Name: city_name, dtype: int64
+Paid        19135
+Referral    13915
+Organic     10695
+Name: signup_channel, dtype: int64
+DEBUG:root:Enter SimpleTable.data2rows.
+DEBUG:root:Exit SimpleTable.data2rows.
+DEBUG:root:Enter SimpleTable.data2rows.
+DEBUG:root:Exit SimpleTable.data2rows.
+DEBUG:root:Enter SimpleTable.data2rows.
+DEBUG:root:Exit SimpleTable.data2rows.
+                           Logit Regression Results
+==============================================================================
+Dep. Variable:                  drove   No. Observations:                10309
+Model:                          Logit   Df Residuals:                    10304
+Method:                           MLE   Df Model:                            4
+Date:                Mon, 01 Aug 2016   Pseudo R-squ.:                  0.2057
+Time:                        22:56:30   Log-Likelihood:                -5647.5
+converged:                       True   LL-Null:                       -7110.3
+                                        LLR p-value:                     0.000
+===================================================================================================
+                                      coef    std err          z      P>|z|      [95.0% Conf. Int.]
+---------------------------------------------------------------------------------------------------
+Intercept                           0.6030      0.041     14.599      0.000         0.522     0.684
+signup_channel_referral[T.True]     0.4867      0.046     10.673      0.000         0.397     0.576
+city_Berton[T.True]                 0.0860      0.047      1.829      0.067        -0.006     0.178
+signup_to_vehicle_add               0.1751      0.019      9.169      0.000         0.138     0.213
+signup_to_bgc                      -0.1758      0.005    -38.530      0.000        -0.185    -0.167
+===================================================================================================
+AUC for 20% holdout: 0.794798031562
+
+Process finished with exit code 0
