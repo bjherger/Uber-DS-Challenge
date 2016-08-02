@@ -1,23 +1,67 @@
 #!/usr/bin/env python
 """
 coding=utf-8
+
+Code supporting question 3 of Uber DS challenge (see docs/instructions)
+
 """
-import pandas as pd
-import sklearn
-import numpy as np
+# Imports
 import logging
-import statsmodels.api as sm
-import sys
-from patsy.highlevel import dmatrices
 
 logging.basicConfig(level=logging.DEBUG)
 
+import numpy as np
+import pandas as pd
+import statsmodels.api as sm
+
+from patsy.highlevel import dmatrices
+
+
+
+
+# Functions
+def main():
+    """
+    Main method for question 3 of Uber DS challenge.
+
+    This method reads, cleans and enriches the data set, and then runs models on that dataset.
+
+    Model output is printed to screen, though the accompanying write up should be the primary reference for reviewing
+    these results.
+    :return: None
+    :rtype: None
+    """
+
+    # Create enriched data set, save to file for external validation
+    signup_df = create_signup_df('../data/input/ds_challenge_v2_1_data.csv')
+    signup_df.to_csv('../data/output/signups_enriched.csv')
+
+    # Prepare model for statsmodels consumption
+    stats_df = statsmodel_prep_df(signup_df)
+
+    # Run logistic regression models
+    run_statsmodels_models(stats_df)
+
 
 def extract_days(input_delta):
+    """
+    Helper function to extract the number of days from a time delta. Returns:
+     - Number of days, if valid time delta
+     - np.NaN if time delta is null or invalid
+    :param input_delta:
+    :return: number of days in time delta
+    :rtype: float
+    """
+
+    # Attempt to coerce into Pandas time delta
     delta = pd.Timedelta(input_delta)
+
+    # Attempt to extract number of days
     days = np.NaN
     if pd.notnull(delta):
         days = delta.days
+
+    # Return result
     return days
 
 
@@ -26,7 +70,7 @@ def create_signup_df(data_path):
     Read signup data in from path, clean, enrich and return
     :param data_path: path to signup data
     :type data_path: str
-    :return: Pandas dataframe, containing original and enriched data
+    :return: Pandas data frame, containing original and enriched data
     :rtype: pd.DataFrame
     """
     logging.info('Beginning import of signup data, from path: %s' % (data_path))
@@ -68,63 +112,95 @@ def create_signup_df(data_path):
     # For weekday() description, see
     # http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DatetimeIndex.weekday.html
     signup_df['signup_weekday'] = signup_df['bgc_date'].apply(lambda x: x.weekday() <= 4)
-    logging.debug('Enriched dataframe description: \n%s' % signup_df.describe())
+
+    # Re-centering
+    signup_df['vehicle_year_past_2000'] = signup_df['vehicle_year'] - 2000
+
+    # Return enriched DF
+    logging.debug('Enriched data frame description: \n%s' % signup_df.describe())
     return signup_df
 
+
 def statsmodel_prep_df(input_df):
-    # TODO remove once replaced w/ :type :
-    isinstance(input_df, pd.DataFrame)
+    """
+    Prepare the input data frame to be consumed by statsmodels. This process includes:
+     - Zero filling columns where NaN logically means 0
+     - Smarter null filling
+    :param input_df: Raw data frame to be prepared
+    :type input_df: pd.DataFrame
+    :return: Prepared data frame
+    :rtype: pd.DataFrame
+    """
 
     prepped_df = input_df.copy(deep=True)
     isinstance(prepped_df, pd.DataFrame)
-
-    # Add constant column
-    # prepped_df['constant'] = 1
 
     # Appropriately deal w/ NaN values
     zero_fill_list = ['bgc_known', 'signup_os_known', 'vehicle_make_known', 'signup_weekday']
     for col in zero_fill_list:
         num_null = prepped_df[col].isnull().sum()
-        if num_null >0:
-            logging.warn('%s null values found in column: %s' %(num_null, col))
+        if num_null > 0:
+            logging.warn('%s null values found in column: %s' % (num_null, col))
             prepped_df[col] = prepped_df[col].fillna(0)
 
+    isinstance(prepped_df, pd.DataFrame)
+
+    # Smarter null filling
     prepped_df['signup_channel'] = prepped_df['signup_channel'].fillna('not_known')
     prepped_df['city_name'] = prepped_df['city_name'].fillna('not_known')
-    prepped_df['vehicle_year_past_2000'] = prepped_df['vehicle_year'] - 2000
+
+    # Manual dummy'ing
     prepped_df['city_Berton'] = prepped_df['city_name'] == 'Berton'
     prepped_df['signup_channel_organic'] = prepped_df['signup_channel'] == 'Organic'
     prepped_df['signup_channel_referral'] = prepped_df['signup_channel'] == 'Referral'
+
     # Remove instances missing drove field
     prepped_df = prepped_df[prepped_df['drove'].notnull()]
+
+    # Convert drove to int
     prepped_df['drove'] = prepped_df['drove'].astype(int)
+
+    # Return formatted DF
     logging.debug('Statsmodel prepped df: \n%s' % prepped_df.describe())
     return prepped_df
 
 
-def run_statsmodel_models(input_df):
+def run_statsmodels_models(input_df):
+    """
+    Run logistic regression model to predict whether a signed up driver ever actually drove.
+    :param input_df: Data frame prepared for statsmodels regression
+    :type input_df: pd.DataFrame
+    :return: None
+    :rtype: None
+    """
+    y, X = dmatrices('drove ~ signup_channel_referral + city_Berton +'
+                     'signup_weekday + vehicle_inspection_known',
+                     data=input_df, return_type='dataframe', NA_action='drop')
+    logging.info('Running full model')
+    logging.debug('full model df: \n%s' % input_df.describe())
+    mod = sm.Logit(endog=y, exog=X)
+    res = mod.fit(method='bfgs', maxiter=100)
     print input_df['city_name'].value_counts()
     print input_df['signup_channel'].value_counts()
-    y, X = dmatrices('drove ~ signup_channel_referral + city_Berton+'
-                     'signup_weekday + vehicle_year_past_2000 + vehicle_inspection_known',
-                     data=input_df, return_type='dataframe', NA_action='drop')
+    print res.summary()
+    logging.info('Full model run complete')
+
+    logging.info('Running inspection and bgc check only model')
+
+    df_subset = input_df[input_df['bgc_known'] & input_df['vehicle_inspection_known']]
+    logging.debug('Subset model df: \n%s' % df_subset.describe())
+
+    y, X = dmatrices('drove ~ signup_channel_referral + city_Berton + '
+                     'vehicle_year_past_2000 + signup_to_vehicle_add + signup_to_bgc',
+                     data=df_subset, return_type='dataframe', NA_action='drop')
 
     mod = sm.Logit(endog=y, exog=X)
     res = mod.fit(method='bfgs', maxiter=100)
+    print df_subset['city_name'].value_counts()
+    print df_subset['signup_channel'].value_counts()
     print res.summary()
-def main():
-    """
-    Description
-    :return: 
-    """
-
-    # Create enriched data set, save to file for external validation
-    signup_df = create_signup_df('../data/input/ds_challenge_v2_1_data.csv')
-    signup_df.to_csv('../data/output/signups_enriched.csv')
-
-    stats_df = statsmodel_prep_df(signup_df)
-    run_statsmodel_models(stats_df)
 
 
+# Main section
 if __name__ == '__main__':
     main()
