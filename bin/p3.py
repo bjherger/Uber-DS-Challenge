@@ -8,6 +8,8 @@ Code supporting question 3 of Uber DS challenge (see docs/instructions)
 # Imports
 import logging
 
+from sklearn.metrics import roc_auc_score
+
 logging.basicConfig(level=logging.DEBUG)
 
 import numpy as np
@@ -36,11 +38,19 @@ def main():
     signup_df = create_signup_df('../data/input/ds_challenge_v2_1_data.csv')
     signup_df.to_csv('../data/output/signups_enriched.csv')
 
+    drive_percentage = signup_df['drove'].astype(int).mean()
+    print 'Q1: Percentage of drivers w/ completed ride: %s ' % drive_percentage
     # Prepare model for statsmodels consumption
     stats_df = statsmodel_prep_df(signup_df)
 
+    # Train test split
+    train = stats_df.sample(frac=0.8, random_state=200)
+    test = stats_df.drop(train.index)
     # Run logistic regression models
-    run_statsmodels_models(stats_df)
+    run_statsmodels_models(train, test, 'drove ~ signup_channel_referral + city_Berton +'
+                               'signup_weekday + vehicle_inspection_known')
+    run_statsmodels_models(train, test, 'drove ~ signup_channel_referral + city_Berton + '
+                     'vehicle_year_past_2000 + signup_to_vehicle_add + signup_to_bgc')
 
 
 def extract_days(input_delta):
@@ -109,6 +119,10 @@ def create_signup_df(data_path):
     signup_df['signup_to_bgc'] = (signup_df['bgc_date'] - signup_df['signup_date']).apply(extract_days)
     signup_df['signup_to_vehicle_add'] = (signup_df['bgc_date'] - signup_df['vehicle_added_date']).apply(extract_days)
 
+    # Clip at 0 to prevent events before signups
+    signup_df['signup_to_bgc'] = signup_df['signup_to_bgc'].clip(lower=0)
+    signup_df['signup_to_vehicle_add'] = signup_df['signup_to_vehicle_add'].clip(lower=0)
+
     # For weekday() description, see
     # http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DatetimeIndex.weekday.html
     signup_df['signup_weekday'] = signup_df['bgc_date'].apply(lambda x: x.weekday() <= 4)
@@ -165,40 +179,39 @@ def statsmodel_prep_df(input_df):
     return prepped_df
 
 
-def run_statsmodels_models(input_df):
+def run_statsmodels_models(train, test, model_description):
     """
     Run logistic regression model to predict whether a signed up driver ever actually drove.
     :param input_df: Data frame prepared for statsmodels regression
     :type input_df: pd.DataFrame
-    :return: None
-    :rtype: None
+    :return: AUC for model generated
+    :rtype: float
     """
-    y, X = dmatrices('drove ~ signup_channel_referral + city_Berton +'
-                     'signup_weekday + vehicle_inspection_known',
-                     data=input_df, return_type='dataframe', NA_action='drop')
-    logging.info('Running full model')
-    logging.debug('full model df: \n%s' % input_df.describe())
-    mod = sm.Logit(endog=y, exog=X)
+    # Run model on all observations
+    # Use dmatrices to format data
+    logging.info('Running model w/ description: %s' %model_description)
+    logging.debug('Train df: \n%s' % train.describe())
+    logging.debug('Test df: \n%s' % test.describe())
+    y_train, X_train = dmatrices(model_description, data=train, return_type='dataframe', NA_action='drop')
+    y_test, X_test = dmatrices(model_description, data=test, return_type='dataframe', NA_action='drop')
+
+    # Create, fit model
+    mod = sm.Logit(endog=y_train, exog=X_train)
     res = mod.fit(method='bfgs', maxiter=100)
-    print input_df['city_name'].value_counts()
-    print input_df['signup_channel'].value_counts()
+
+    # Output model summary
+    print train['city_name'].value_counts()
+    print train['signup_channel'].value_counts()
     print res.summary()
-    logging.info('Full model run complete')
 
-    logging.info('Running inspection and bgc check only model')
+    # Create, output AUC
+    predicted = res.predict(X_test)
+    auc = roc_auc_score(y_true=y_test, y_score=predicted)
+    print auc
 
-    df_subset = input_df[input_df['bgc_known'] & input_df['vehicle_inspection_known']]
-    logging.debug('Subset model df: \n%s' % df_subset.describe())
+    # Return AUC for model generated
+    return auc
 
-    y, X = dmatrices('drove ~ signup_channel_referral + city_Berton + '
-                     'vehicle_year_past_2000 + signup_to_vehicle_add + signup_to_bgc',
-                     data=df_subset, return_type='dataframe', NA_action='drop')
-
-    mod = sm.Logit(endog=y, exog=X)
-    res = mod.fit(method='bfgs', maxiter=100)
-    print df_subset['city_name'].value_counts()
-    print df_subset['signup_channel'].value_counts()
-    print res.summary()
 
 
 # Main section

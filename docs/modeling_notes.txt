@@ -7,6 +7,8 @@ vehicle year: More vehicles are 5+ years old than expected
 
 Data cleaning / enrichming
 vehicle year: contains 0's. replacing w/ NAN
+signup_to_bgc: some bgc seem to occur before signup. Setting min value of 0
+signup_to_vehicle_add: some vehicle_add seem to occur before signup. Setting min value of 0
 
 Modeling:
 No multicollinearity issues apparent
