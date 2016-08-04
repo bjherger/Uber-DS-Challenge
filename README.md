@@ -2,8 +2,10 @@
 
 A data challenge provided by Uber, for a Data Scientist position. 
 ## Getting started
-Data Challenge instructions and provided data are in docs/instructions, and responses to questions are in 
-docs/responses.
+
+### Repo structure
+Data Challenge instructions and provided data are in `docs/instructions`, and responses to questions are in 
+`docs/responses`. Code underlying responses to questions is in `bin/`. 
 
 ### Python Environment
 Python code in this repo utilizes packages that are not part of the common library. To make sure you have all of the 
